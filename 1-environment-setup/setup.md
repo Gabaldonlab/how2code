@@ -9,7 +9,7 @@ In VsCode all we need to do is open up the "Extensions" menu (on Linux Ctrl-Shif
 The very first search result should be called "Python" and that is what we need, so we click and install it. This should give us most of the
 tools that can serve as a crutch for easier development.
 
-![lsp installation](https://github.com/gabaldonlab/how2code/)
+![lsp installation](https://github.com/Gabaldonlab/how2code/blob/main/1-environment-setup/assets/python-lsp-installation.png?raw=true)
 
 ---
 
@@ -21,12 +21,24 @@ rhythm and nobody's doing the robot in the middle of your elegant tango. Let you
 In VsCode "Extensions" menu search for "Black Formatter", then install the very first search result. This will ensure that
 your code is nice, elegant and readable. No need to be smart, let the tools be smart for you!
 
+*Installation:*
+![black installation](https://github.com/Gabaldonlab/how2code/blob/main/1-environment-setup/assets/black-formatter-installation.png?raw=true)
+
+*Before formatting:*
+
+![before formatting example](https://github.com/Gabaldonlab/how2code/blob/main/1-environment-setup/assets/before-formatting.png?raw=true)
+
+*After formatting:*
+![after formatting example](https://github.com/Gabaldonlab/how2code/blob/main/1-environment-setup/assets/after-formatting.png?raw=true)
+
 ---
 
 ## 3. Static type checker - MyPy
 
 This is already included in the previously installed Microsoft Pylance LSP, but worth to mention it.
 Strongly typed code is always sexier, than a weak typed one. (Not a joke, it can save a lot of daily brain power for you!)
+
+![static type checking](https://github.com/Gabaldonlab/how2code/blob/main/1-environment-setup/assets/type-checker-example.png?raw=true)
 
 ---
 
