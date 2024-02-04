@@ -44,6 +44,7 @@ Strongly typed code is always sexier, than a weak typed one. (Not a joke, it can
 
 ## 4. Pytest
 
+![pytest example](https://github.com/Gabaldonlab/how2code/blob/main/1-environment-setup/assets/pytest-example.png?raw=true)
 Testing can save you time in development/debugging and maintenance.
 
 ```bash
