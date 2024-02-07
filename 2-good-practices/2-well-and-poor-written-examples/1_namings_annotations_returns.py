@@ -65,9 +65,7 @@ def calculate_quadratic_roots(
     Calculate the roots of a quadratic equation of the form ax^2 + bx + c.
     """
 
-    discriminant: float = (
-        coefficient_b**2 - 4 * coefficient_a * coefficient_c
-    )
+    discriminant: float = coefficient_b**2 - 4 * coefficient_a * coefficient_c
 
     if discriminant < 0:
         raise ValueError("No real roots.")
