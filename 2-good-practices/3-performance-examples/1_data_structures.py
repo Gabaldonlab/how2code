@@ -2,12 +2,18 @@
 """
 # 1. Using different data structures!
 
-Use the following alias in your ~/.bashrc!!
+Previously install memory_profiler.
 
-alias get-quick-stats="/usr/bin/time -f \"mem=%K RSS=%M elapsed=%E cpu.sys=%S user=%U\""
+```bash
+pip install memory_profiler
+```
 
-Then you can execute this script as:
-get-quick-stats python3 1_data_structures.py
+```bash
+conda install conda-forge::memory_profiler
+```
+
+Run script:
+python3 -m memory_profiler 1_data_structures.py
 """
 
 import os
