@@ -14,17 +14,15 @@ def timing(func):
     return wrapper
 
 @timing
-def use_while_loop() -> None:
-    test_arr: list[int] = list(range(1000000))
-    index: int = 0
-    while index < len(test_arr) - 1:
-        index += 1
-use_while_loop()
+def test_loop() -> list[int]:
+    odd: list[int] = []
+    for number in range(1000000):
+        if number % 2:
+            odd.append(number)
+    return odd
+test_loop()
 
 @timing
-def use_for_loop() -> None:
-    test_arr: list[int] = list(range(1000000))
-    index: int = 0
-    for number in test_arr:
-        index += 1
-use_for_loop()
+def test_filter() -> list[int]:
+    return list(filter(lambda x: x % 2, range(1000000)))
+test_filter()
