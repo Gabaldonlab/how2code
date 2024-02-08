@@ -194,6 +194,86 @@ def get_cnv_calling_alignments(opt: argparse.Namespace) -> set[str]:
     return cnv_calling_algs
 
 
+def generate_and_write_real_bedpe_breakpoints_around_repeats(opt: argparse.Namespace, repeats_table_file: str) -> None:
+    # debug
+    if opt.real_bedpe_breakpoints:
+        raise ValueError(
+            "You can not specify --simulate_SVs_around_repeats and"
+            " --real_bedpe_breakpoints. You may definir either of both."
+        )
+    if opt.skip_repeat_analysis:
+        raise ValueError(
+            "You should not skip the repeats analysis (with"
+            " --skip_repeat_analysis) if you want to simulate SVs around"
+            " repeats."
+        )
+    if opt.simulate_SVs_around_HomologousRegions:
+        raise ValueError(
+            "You can not specify --simulate_SVs_around_repeats and"
+            " --simulate_SVs_around_HomologousRegions."
+        )
+
+    # override the real_bedpe_breakpoints with the bedpe comming from repeats
+    opt.real_bedpe_breakpoints = (
+        sv_functions.get_bedpe_breakpoints_around_repeats(
+            repeats_table_file,
+            replace=opt.replace,
+            max_breakpoints=(opt.nvars * 5 * 10000),
+            max_breakpoints_per_repeat=1,
+            threads=opt.threads,
+            max_repeats=(opt.nvars * 5 * 2500),
+        )
+    )
+
+def generate_real_bedpe_breakpoints_around_homologous_regions(opt: argparse.Namespace) -> None:
+    # debug
+    if opt.real_bedpe_breakpoints:
+        raise ValueError(
+            "You can not specify --simulate_SVs_around_repeats and"
+            " --real_bedpe_breakpoints. You may definie either of both."
+        )
+    if opt.simulate_SVs_around_repeats:
+        raise ValueError(
+            "You can not specify --simulate_SVs_around_repeats and"
+            " --simulate_SVs_around_HomologousRegions."
+        )
+
+    # get a file that contains the blastn of some regions of the genome
+    if not opt.simulate_SVs_around_HomologousRegions_previousBlastnFile:
+        blastn_file = sv_functions.get_blastn_regions_genome_against_itself(
+            opt.ref,
+            opt.simulate_SVs_around_HomologousRegions_maxEvalue,
+            opt.simulate_SVs_around_HomologousRegions_queryWindowSize,
+            opt.replace,
+            opt.threads,
+        )
+    else:
+        blastn_file = (
+            opt.simulate_SVs_around_HomologousRegions_previousBlastnFile
+        )
+
+    # define the bedpe breakpoints around the homologous regions
+    bedpe_breakpoints = (
+        "%s/breakpoints_aroundHomRegions_wsize=%ibp_maxEval=%s_minQcovS=%i.bedpe"
+        % (
+            opt.outdir,
+            opt.simulate_SVs_around_HomologousRegions_queryWindowSize,
+            opt.simulate_SVs_around_HomologousRegions_maxEvalue,
+            opt.simulate_SVs_around_HomologousRegions_minPctOverlap,
+        )
+    )
+
+    opt.real_bedpe_breakpoints = sv_functions.get_bedpe_breakpoints_around_homologousRegions(
+        blastn_file,
+        bedpe_breakpoints,
+        replace=opt.replace,
+        threads=opt.threads,
+        max_eval=opt.simulate_SVs_around_HomologousRegions_maxEvalue,
+        query_window_size=opt.simulate_SVs_around_HomologousRegions_queryWindowSize,
+        min_qcovs=opt.simulate_SVs_around_HomologousRegions_minPctOverlap,
+        max_n_hits=(opt.nvars * 5 * 2500),
+    )
+
 
 if opt.type_variant_calling:
     modules_set: set[str] = set(opt.type_variant_calling.split(","))
@@ -300,7 +380,7 @@ print(
 )
 
 # change the default parameters if specified
-if opt.parameters_json_file is not None:
+if opt.parameters_json_file:
     (
         gridss_blacklisted_regions,
         gridss_maxcoverage,
@@ -322,7 +402,7 @@ if opt.parameters_json_file is not None:
     )
 
 # test whether the gff is correct
-if opt.gff is not None:
+if opt.gff:
     (
         correct_gff,
         gff_with_biotype,
@@ -340,19 +420,18 @@ if opt.gff is not None:
     )
 
 # check that the tmpdir exists
-if opt.tmpdir is not None:
+if opt.tmpdir:
     if not os.path.isdir(opt.tmpdir):
         raise ValueError(
             "The folder that you specified with --tmpdir does not exist"
         )
 
 # get the repeats table
-if opt.skip_repeat_analysis is False:
+if not opt.skip_repeat_analysis:
     print("getting repeats")
     repeats_df, repeats_table_file = sv_functions.get_repeat_maskerDF(
         opt.ref, threads=opt.threads, replace=opt.replace
     )
-
 else:
     print("skipping the repeats analysis")
     sv_functions.write_repeats_table_file(repeats_table_file)
@@ -365,107 +444,17 @@ if opt.StopAfter_repeatsObtention is True:
     )
     sys.exit(0)
 
-####### GENERATE A real_bedpe_breakpoints AROUND REPEATS IF NECESSARY ##########
 
-if opt.simulate_SVs_around_repeats is True:
+if opt.simulate_SVs_around_repeats:
     print("simulating around repeats")
+    generate_and_write_real_bedpe_breakpoints_around_repeats(opt, repeats_table_file)
 
-    # debug
-    if opt.real_bedpe_breakpoints is not None:
-        raise ValueError(
-            "You can not specify --simulate_SVs_around_repeats and"
-            " --real_bedpe_breakpoints. You may definir either of both."
-        )
-    if opt.skip_repeat_analysis is True:
-        raise ValueError(
-            "You should not skip the repeats analysis (with"
-            " --skip_repeat_analysis) if you want to simulate SVs around"
-            " repeats."
-        )
-    if opt.simulate_SVs_around_HomologousRegions is True:
-        raise ValueError(
-            "You can not specify --simulate_SVs_around_repeats and"
-            " --simulate_SVs_around_HomologousRegions."
-        )
-
-    # override the real_bedpe_breakpoints with the bedpe comming from repeats
-    opt.real_bedpe_breakpoints = (
-        sv_functions.get_bedpe_breakpoints_around_repeats(
-            repeats_table_file,
-            replace=opt.replace,
-            max_breakpoints=(opt.nvars * 5 * 10000),
-            max_breakpoints_per_repeat=1,
-            threads=opt.threads,
-            max_repeats=(opt.nvars * 5 * 2500),
-        )
-    )
-
-################################################################################
-
-####### GENERATE real_bedpe_breakpoints AROUND HOMOLOGOUS REGIONS #########
-
-if opt.simulate_SVs_around_HomologousRegions is True:
+if opt.simulate_SVs_around_HomologousRegions:
     print("simulating around Homologous regions")
-
-    # debug
-    if opt.real_bedpe_breakpoints is not None:
-        raise ValueError(
-            "You can not specify --simulate_SVs_around_repeats and"
-            " --real_bedpe_breakpoints. You may definie either of both."
-        )
-    if opt.simulate_SVs_around_repeats is True:
-        raise ValueError(
-            "You can not specify --simulate_SVs_around_repeats and"
-            " --simulate_SVs_around_HomologousRegions."
-        )
-
-    # get a file that contains the blastn of some regions of the genome
-    if opt.simulate_SVs_around_HomologousRegions_previousBlastnFile is None:
-        blastn_file = sv_functions.get_blastn_regions_genome_against_itself(
-            opt.ref,
-            opt.simulate_SVs_around_HomologousRegions_maxEvalue,
-            opt.simulate_SVs_around_HomologousRegions_queryWindowSize,
-            opt.replace,
-            opt.threads,
-        )
-
-    else:
-        blastn_file = (
-            opt.simulate_SVs_around_HomologousRegions_previousBlastnFile
-        )
-
-    # define the bedpe breakpoints around the homologous regions
-    bedpe_breakpoints = (
-        "%s/breakpoints_aroundHomRegions_wsize=%ibp_maxEval=%s_minQcovS=%i.bedpe"
-        % (
-            opt.outdir,
-            opt.simulate_SVs_around_HomologousRegions_queryWindowSize,
-            opt.simulate_SVs_around_HomologousRegions_maxEvalue,
-            opt.simulate_SVs_around_HomologousRegions_minPctOverlap,
-        )
-    )
-
-    opt.real_bedpe_breakpoints = sv_functions.get_bedpe_breakpoints_around_homologousRegions(
-        blastn_file,
-        bedpe_breakpoints,
-        replace=opt.replace,
-        threads=opt.threads,
-        max_eval=opt.simulate_SVs_around_HomologousRegions_maxEvalue,
-        query_window_size=opt.simulate_SVs_around_HomologousRegions_queryWindowSize,
-        min_qcovs=opt.simulate_SVs_around_HomologousRegions_minPctOverlap,
-        max_n_hits=(opt.nvars * 5 * 2500),
-    )
-
-############################################################################
-
-#############################
+    generate_real_bedpe_breakpoints_around_homologous_regions(opt)
 
 # end time of processing
 end_time_GeneralProcessing = time.time()
-
-########################################
-########################################
-########################################
 
 
 #####################################
