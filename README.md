@@ -47,10 +47,12 @@ echo \
 sudo apt-get update
 ```
 
+3. ### Install Docker and the dependencies
 ```bash
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
+4. ### Run the hello-world installation test
 ```bash
 sudo docker run hello-world
 ```
