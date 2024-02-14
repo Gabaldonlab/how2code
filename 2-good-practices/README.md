@@ -1,3 +1,6 @@
+SUMMARY
+=======
+
 # Why is it important to pay attention and give some love when you write your code?
 
 Well, it's not that obvious, because each of us have a different purpose to use code in our job.
